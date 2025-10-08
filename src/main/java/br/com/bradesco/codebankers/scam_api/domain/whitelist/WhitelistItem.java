@@ -9,16 +9,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity(name = "WhitelistIem")
 @Table(name = "whitelist_items")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class WhitelistItem {
 
@@ -34,4 +28,29 @@ public class WhitelistItem {
     private String itemValue;
 
     private String source;
+
+    public WhitelistItem(){}
+
+    public WhitelistItem(Long id, ItemType itemType, String itemValue, String source) {
+        this.id = id;
+        this.itemType = itemType;
+        this.itemValue = itemValue;
+        this.source = source;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public ItemType getItemType() {
+        return itemType;
+    }
+
+    public String getItemValue() {
+        return itemValue;
+    }
+
+    public String getSource() {
+        return source;
+    }
 }
