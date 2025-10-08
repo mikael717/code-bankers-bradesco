@@ -9,18 +9,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity(name = "VerificationLog")
 @Table(name = "verification_logs")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+
 @EqualsAndHashCode(of = "id")
 
 public class VerificationLog {
@@ -41,6 +36,41 @@ public class VerificationLog {
 
     private String reasons; //motivos concatenados, e:"blacklisted, contains_keyword"
 
-    @Column(name = "verification_date")
+    @Column(name = "verification_logs")
     private LocalDateTime verificationDate;
+
+    public VerificationLog(){}
+
+    public VerificationLog(Long id, ItemType itemType, String itemValue, Verdict verdict, String reasons, LocalDateTime verificationDate) {
+        this.id = id;
+        this.itemType = itemType;
+        this.itemValue = itemValue;
+        this.verdict = verdict;
+        this.reasons = reasons;
+        this.verificationDate = verificationDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public ItemType getItemType() {
+        return itemType;
+    }
+
+    public String getItemValue() {
+        return itemValue;
+    }
+
+    public Verdict getVerdict() {
+        return verdict;
+    }
+
+    public String getReasons() {
+        return reasons;
+    }
+
+    public LocalDateTime getVerificationDate() {
+        return verificationDate;
+    }
 }
