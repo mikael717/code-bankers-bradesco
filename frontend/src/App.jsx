@@ -87,13 +87,13 @@ const App = () => {
             </div>
 
             <div className="col-12 lg:col-6">
-              <HistoryPanel history={history} />
+              <InfoSection />
             </div>
           </div>
 
-          {history.length === 0 && (
+          {history.length > 0 && (
             <div className="mt-4">
-              <InfoSection />
+              <HistoryPanel history={history} />
             </div>
           )}
         </div>
