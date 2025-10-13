@@ -63,36 +63,40 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-column" style={{ backgroundColor: '#f8f9fa' }}>
+    <div className="min-h-screen flex flex-column" style={{ backgroundColor: '#fafbfc' }}>
       <Toast ref={toast} />
       
       <Header />
 
-      <main className="flex-grow-1">
-        <div className="max-w-screen-xl mx-auto p-4 py-5">
+      <main className="flex-grow-1 py-5">
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 2rem' }}>
           
           {stats.safe + stats.warning + stats.unsafe > 0 && (
-            <div className="mb-4">
+            <div className="mb-5">
               <StatsCard stats={stats} />
             </div>
           )}
 
           <div className="grid">
-            <div className="col-12 lg:col-6">
-              {!result ? (
-                <VerificationForm onVerify={handleVerify} loading={loading} />
-              ) : (
-                <ResultCard result={result} onClose={handleCloseResult} />
-              )}
+            <div className="col-12 lg:col-7 xl:col-7">
+              <div className="pr-0 lg:pr-3">
+                {!result ? (
+                  <VerificationForm onVerify={handleVerify} loading={loading} />
+                ) : (
+                  <ResultCard result={result} onClose={handleCloseResult} />
+                )}
+              </div>
             </div>
 
-            <div className="col-12 lg:col-6">
-              <InfoSection />
+            <div className="col-12 lg:col-5 xl:col-5">
+              <div className="pl-0 lg:pl-3 mt-4 lg:mt-0">
+                <InfoSection />
+              </div>
             </div>
           </div>
 
           {history.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-5">
               <HistoryPanel history={history} />
             </div>
           )}

@@ -57,7 +57,7 @@ const HistoryPanel = ({ history }) => {
 
   if (!history || history.length === 0) {
     return (
-      <Card className="shadow-3">
+      <Card style={{ border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: '12px' }}>
         <div className="text-center p-5">
           <i className="pi pi-history text-5xl text-400 mb-3"></i>
           <h3 className="text-xl font-semibold text-700 mb-2">Nenhuma verificação</h3>
@@ -68,11 +68,11 @@ const HistoryPanel = ({ history }) => {
   }
 
   return (
-    <Card className="shadow-3">
+    <Card style={{ border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: '12px' }}>
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-900 m-0 mb-1">
+        <h3 className="text-lg font-bold text-900 m-0 mb-1">
           <i className="pi pi-history mr-2"></i>
-          Histórico
+          Histórico de Verificações
         </h3>
         <p className="text-600 text-sm m-0">Últimas {history.length} verificação(ões)</p>
       </div>

@@ -63,46 +63,44 @@ const VerificationForm = ({ onVerify, loading }) => {
   };
 
   return (
-    <Card className="shadow-3">
-      <div className="text-center mb-5">
-        <div className="inline-flex align-items-center justify-content-center bg-blue-50 border-circle mb-3" style={{ width: '70px', height: '70px' }}>
-          <i className="pi pi-search text-4xl text-blue-600"></i>
-        </div>
-        <h2 className="text-3xl font-bold text-900 mb-2">Verificador de Golpes</h2>
-        <p className="text-600">Verifique a segurança de telefones, e-mails e URLs</p>
+    <Card style={{ border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: '12px' }}>
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-900 mb-2">Verificar Segurança</h2>
+        <p className="text-600 text-sm m-0">Selecione o tipo e insira os dados para verificação</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-column gap-4">
         <div className="field">
-          <label className="block text-900 font-medium mb-3">
+          <label className="block text-900 font-medium mb-3 text-sm">
             Tipo de Verificação
           </label>
-          <div className="grid">
+          <div className="flex gap-2">
             {itemTypes.map((type) => (
-              <div key={type.value} className="col-12 md:col-4">
-                <Button
-                  type="button"
+              <div key={type.value} className="flex-1">
+                <div
                   onClick={() => {
                     setItemType(type.value);
                     setItemValue('');
                     setError('');
                   }}
-                  className="w-full p-3"
-                  outlined={itemType !== type.value}
-                  severity={itemType === type.value ? 'info' : 'secondary'}
+                  className="p-3 text-center cursor-pointer transition-all transition-duration-200"
+                  style={{
+                    backgroundColor: itemType === type.value ? '#3b82f6' : '#ffffff',
+                    color: itemType === type.value ? '#ffffff' : '#6b7280',
+                    border: `1px solid ${itemType === type.value ? '#3b82f6' : '#e5e7eb'}`,
+                    borderRadius: '8px'
+                  }}
                 >
-                  <div className="flex flex-column align-items-center gap-2">
-                    <i className={`${type.icon} text-2xl`}></i>
-                    <span className="font-semibold">{type.label}</span>
-                  </div>
-                </Button>
+                  <i className={`${type.icon} text-2xl mb-2 block`}></i>
+                  <span className="text-sm font-medium">{type.label}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         <div className="field">
-          <label htmlFor="itemValue" className="block text-900 font-medium mb-2">
+          <label htmlFor="itemValue" className="block text-900 font-medium mb-2 text-sm">
             {itemTypes.find(t => t.value === itemType)?.label}
           </label>
           <InputText
@@ -114,18 +112,25 @@ const VerificationForm = ({ onVerify, loading }) => {
             }}
             placeholder={getPlaceholder()}
             className="w-full"
+            style={{ padding: '0.75rem', fontSize: '0.95rem', borderRadius: '8px' }}
           />
         </div>
 
         {error && (
-          <Message severity="error" text={error} className="w-full" />
+          <Message severity="error" text={error} className="w-full" style={{ borderRadius: '8px' }} />
         )}
 
         <Button
           type="submit"
-          label="Verificar"
+          label={loading ? "Verificando..." : "Verificar"}
           icon={loading ? 'pi pi-spin pi-spinner' : 'pi pi-search'}
-          className="w-full"
+          className="w-full font-semibold"
+          style={{ 
+            padding: '0.75rem', 
+            backgroundColor: '#3b82f6', 
+            border: 'none',
+            borderRadius: '8px'
+          }}
           disabled={loading}
         />
       </form>

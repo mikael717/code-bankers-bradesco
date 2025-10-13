@@ -9,15 +9,15 @@ const StatsCard = ({ stats }) => {
   return (
     <div className="grid">
       <div className="col-12 md:col-4">
-        <Card className="shadow-2 bg-green-50 border-1 border-green-200">
+        <Card style={{ border: '1px solid #d1fae5', backgroundColor: '#f0fdf4', borderRadius: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
           <div className="flex align-items-center justify-content-between">
             <div>
-              <div className="text-green-600 font-medium mb-1 text-sm">Seguros</div>
+              <div className="text-green-600 font-medium mb-1 text-xs">Seguros</div>
               <div className="text-3xl font-bold text-green-700">{stats.safe}</div>
-              <div className="text-green-600 text-xs">{safePercentage}% do total</div>
+              <div className="text-green-600 text-xs">{safePercentage}%</div>
             </div>
-            <div className="bg-green-100 border-circle flex align-items-center justify-content-center" 
-                 style={{ width: '50px', height: '50px' }}>
+            <div style={{ width: '48px', height: '48px', backgroundColor: '#d1fae5', borderRadius: '50%' }} 
+                 className="flex align-items-center justify-content-center">
               <i className="pi pi-check-circle text-2xl text-green-600"></i>
             </div>
           </div>
@@ -25,15 +25,15 @@ const StatsCard = ({ stats }) => {
       </div>
 
       <div className="col-12 md:col-4">
-        <Card className="shadow-2 bg-orange-50 border-1 border-orange-200">
+        <Card style={{ border: '1px solid #fed7aa', backgroundColor: '#fffbeb', borderRadius: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
           <div className="flex align-items-center justify-content-between">
             <div>
-              <div className="text-orange-600 font-medium mb-1 text-sm">Atenção</div>
+              <div className="text-orange-600 font-medium mb-1 text-xs">Atenção</div>
               <div className="text-3xl font-bold text-orange-700">{stats.warning}</div>
-              <div className="text-orange-600 text-xs">{warningPercentage}% do total</div>
+              <div className="text-orange-600 text-xs">{warningPercentage}%</div>
             </div>
-            <div className="bg-orange-100 border-circle flex align-items-center justify-content-center" 
-                 style={{ width: '50px', height: '50px' }}>
+            <div style={{ width: '48px', height: '48px', backgroundColor: '#fed7aa', borderRadius: '50%' }} 
+                 className="flex align-items-center justify-content-center">
               <i className="pi pi-exclamation-triangle text-2xl text-orange-600"></i>
             </div>
           </div>
@@ -41,15 +41,15 @@ const StatsCard = ({ stats }) => {
       </div>
 
       <div className="col-12 md:col-4">
-        <Card className="shadow-2 bg-red-50 border-1 border-red-200">
+        <Card style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2', borderRadius: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
           <div className="flex align-items-center justify-content-between">
             <div>
-              <div className="text-red-600 font-medium mb-1 text-sm">Perigo</div>
+              <div className="text-red-600 font-medium mb-1 text-xs">Perigo</div>
               <div className="text-3xl font-bold text-red-700">{stats.unsafe}</div>
-              <div className="text-red-600 text-xs">{unsafePercentage}% do total</div>
+              <div className="text-red-600 text-xs">{unsafePercentage}%</div>
             </div>
-            <div className="bg-red-100 border-circle flex align-items-center justify-content-center" 
-                 style={{ width: '50px', height: '50px' }}>
+            <div style={{ width: '48px', height: '48px', backgroundColor: '#fecaca', borderRadius: '50%' }} 
+                 className="flex align-items-center justify-content-center">
               <i className="pi pi-times-circle text-2xl text-red-600"></i>
             </div>
           </div>
