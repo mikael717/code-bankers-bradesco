@@ -27,7 +27,7 @@ public class VerificationService {
                 .flatMap(rule -> rule.verify(request).stream())
                 .collect(Collectors.toList());
 
-        //determine o veredito final com base nos motivos;
+        //determina o veredito final com base nos motivos;
         Verdict finalVerdict = determineVerdict(allReasons);
 
         logRespository.save(new VerificationLog(
@@ -43,15 +43,10 @@ public class VerificationService {
     }
 
     private Verdict determineVerdict(List<String> reasons) {
-        if(reasons.contains("ITEM_FOUND_IN_WHITELIST")){
-            return Verdict.SAFE;
-        }
-        if(reasons.contains("ITEM_FOUND_IN_BLACKLIST")){
-            return Verdict.BLOCK;
-        }
-        if(!reasons.isEmpty()){
-            return Verdict.REVIEW;
-        }
-        return Verdict.SAFE; // se nenhuma regra foi acionada, é seguro;
+        if(reasons.contains("ITEM_FOUND_IN_WHITELIST")) return Verdict.SAFE;
+
+        if(reasons.contains("ITEM_FOUND_IN_BLACKLIST")) return Verdict.BLOCK;
+
+        return Verdict.REVIEW; // se nenhuma regra foi acionada, revisar;
     }
 }
