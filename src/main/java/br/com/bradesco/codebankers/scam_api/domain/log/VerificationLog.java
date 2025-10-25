@@ -36,8 +36,14 @@ public class VerificationLog {
 
     private String reasons; //motivos concatenados, e:"blacklisted, contains_keyword"
 
-    @Column(name = "verification_logs")
+    @Column(name = "verification_date")
     private LocalDateTime verificationDate;
+
+    @Column(name = "normalized_value")
+    private String normalizedValue;
+
+    @Column(name = "url_host")
+    private String urlHost;
 
     public VerificationLog(){}
 
@@ -48,6 +54,7 @@ public class VerificationLog {
         this.verdict = verdict;
         this.reasons = reasons;
         this.verificationDate = verificationDate;
+;
     }
 
     public Long getId() {
@@ -72,5 +79,21 @@ public class VerificationLog {
 
     public LocalDateTime getVerificationDate() {
         return verificationDate;
+    }
+
+    public String getNormalizedValue() {
+        return normalizedValue;
+    }
+
+    public void setNormalizedValue(String normalizedValue) {
+        this.normalizedValue = normalizedValue;
+    }
+
+    public String getUrlHost() {
+        return urlHost;
+    }
+
+    public void setUrlHost(String urlHost) {
+        this.urlHost = urlHost;
     }
 }
