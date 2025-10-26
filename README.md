@@ -14,12 +14,12 @@ Sistema de verificação de golpes digitais desenvolvido para identificar telefo
 
 ```
 code-bankers-bradesco/
-├── src/                    # Backend (Spring Boot)
+├── src/                  # Backend (Spring Boot)
 │   ├── main/
-│   │   ├── java/          # Código fonte Java
-│   │   └── resources/     # Configurações
-│   └── test/              # Testes unitários
-├── frontend/              # Frontend (React)
+│   │   ├── java/         # Código fonte Java
+│   │   └── resources/    # Configurações e conexão com banco de dados
+│   └── test/             # Testes unitários
+├── frontend/             # Frontend (React)
 │   ├── src/
 │   │   ├── components/   # Componentes React
 │   │   └── services/     # Serviços de API
