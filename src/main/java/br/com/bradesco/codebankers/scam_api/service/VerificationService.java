@@ -1,5 +1,6 @@
 package br.com.bradesco.codebankers.scam_api.service;
 
+import br.com.bradesco.codebankers.scam_api.config.CodebankersProperties;
 import br.com.bradesco.codebankers.scam_api.domain.ItemType;
 import br.com.bradesco.codebankers.scam_api.domain.log.Verdict;
 import br.com.bradesco.codebankers.scam_api.domain.log.VerificationLog;
@@ -22,7 +23,14 @@ public class VerificationService {
     private List<VerificationRule> rules;
     @Autowired
     private VerificationLogRepository logRespository;
+    @Autowired
+    private CodebankersProperties codebankersProperties;
 
+    public VerificationService(List<VerificationRule> rules, VerificationLogRepository logRespository, CodebankersProperties codebankersProperties) {
+        this.rules = rules;
+        this.logRespository = logRespository;
+        this.codebankersProperties = codebankersProperties;
+    }
 
     public VerificationResponse verify(VerificationRequest request){
         //execute as regras e colete os motivos.
@@ -68,6 +76,8 @@ public class VerificationService {
         if(reasons.contains("ITEM_FOUND_IN_WHITELIST")) return Verdict.SAFE;
 
         if(reasons.contains("ITEM_FOUND_IN_BLACKLIST")) return Verdict.BLOCK;
+
+        if(reasons.contains("MATCH_OFFICIAL_DOMAIN") && codebankersProperties.isOfficialDomainIsSafe()) return Verdict.SAFE;
 
         return Verdict.REVIEW; // se nenhuma regra foi acionada, revisar;
     }
