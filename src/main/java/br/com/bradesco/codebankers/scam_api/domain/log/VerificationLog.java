@@ -1,23 +1,14 @@
 package br.com.bradesco.codebankers.scam_api.domain.log;
 
 import br.com.bradesco.codebankers.scam_api.domain.ItemType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
 @Entity(name = "VerificationLog")
 @Table(name = "verification_logs")
-
 @EqualsAndHashCode(of = "id")
-
 public class VerificationLog {
 
     @Id
@@ -34,7 +25,7 @@ public class VerificationLog {
     @Enumerated(EnumType.STRING)
     private Verdict verdict;
 
-    private String reasons; //motivos concatenados, e:"blacklisted, contains_keyword"
+    private String reasons;
 
     @Column(name = "verification_date")
     private LocalDateTime verificationDate;
@@ -45,16 +36,27 @@ public class VerificationLog {
     @Column(name = "url_host")
     private String urlHost;
 
-    public VerificationLog(){}
+    @Column(name = "risk_score")
+    private int riskScore;
 
-    public VerificationLog(Long id, ItemType itemType, String itemValue, Verdict verdict, String reasons, LocalDateTime verificationDate) {
+    public VerificationLog() {
+    }
+
+    public VerificationLog(Long id, ItemType itemType, String itemValue, Verdict verdict, String reasons, LocalDateTime verificationDate, int riskScore) {
         this.id = id;
         this.itemType = itemType;
         this.itemValue = itemValue;
         this.verdict = verdict;
         this.reasons = reasons;
         this.verificationDate = verificationDate;
-;
+        this.riskScore = riskScore;
+    }
+    public int getRiskScore() {
+        return riskScore;
+    }
+
+    public void setRiskScore(int riskScore) {
+        this.riskScore = riskScore;
     }
 
     public Long getId() {

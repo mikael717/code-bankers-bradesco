@@ -5,6 +5,7 @@ import br.com.bradesco.codebankers.scam_api.domain.ItemType;
 import br.com.bradesco.codebankers.scam_api.domain.log.Verdict;
 import br.com.bradesco.codebankers.scam_api.domain.log.VerificationLog;
 import br.com.bradesco.codebankers.scam_api.domain.log.VerificationLogRepository;
+import br.com.bradesco.codebankers.scam_api.domain.report.ReportRepository; // <--- IMPORTANTE
 import br.com.bradesco.codebankers.scam_api.dto.VerificationRequest;
 import br.com.bradesco.codebankers.scam_api.dto.VerificationResponse;
 import br.com.bradesco.codebankers.scam_api.service.rules.VerificationRule;
@@ -25,60 +26,117 @@ public class VerificationService {
     private VerificationLogRepository logRespository;
     @Autowired
     private CodebankersProperties codebankersProperties;
+    @Autowired
+    private ReportRepository reportRepository; // <--- ADICIONE ISSO AQUI PARA RESOLVER O PRIMEIRO ERRO
 
-    public VerificationService(List<VerificationRule> rules, VerificationLogRepository logRespository, CodebankersProperties codebankersProperties) {
+    // Se você usa construtor, atualize ele também (ou deixe o @Autowired cuidar disso se preferir)
+    public VerificationService(List<VerificationRule> rules,
+                               VerificationLogRepository logRespository,
+                               CodebankersProperties codebankersProperties,
+                               ReportRepository reportRepository) {
         this.rules = rules;
         this.logRespository = logRespository;
         this.codebankersProperties = codebankersProperties;
+        this.reportRepository = reportRepository;
     }
 
-    public VerificationResponse verify(VerificationRequest request){
-        //execute as regras e colete os motivos.
+    public VerificationResponse verify(VerificationRequest request) {
+        // 1. Executa regras
         List<String> allReasons = rules.stream()
                 .flatMap(rule -> rule.verify(request).stream())
                 .collect(Collectors.toList());
 
-        //determina o veredito final com base nos motivos;
-        Verdict finalVerdict = determineVerdict(allReasons);
+        // 2. Calcula Score (AQUI ESTAVA O ERRO DE ARGUMENTOS)
+        // Agora passamos a lista, o tipo e o valor para ele consultar o banco de report
+        int score = calculateRiskScore(allReasons, request.itemType(), request.itemValue());
 
-        //1. calcula o valor normalizado apenas para log; mantem o contrato
-        final String normalizedValueForLog = switch (request.itemType()){
+        Verdict finalVerdict = determineVerdictByScore(score, allReasons);
+
+        // Whitelist zera o score
+        if (allReasons.contains("ITEM_FOUND_IN_WHITELIST") ||
+                (allReasons.contains("MATCH_OFFICIAL_DOMAIN") && codebankersProperties.isOfficialDomainIsSafe())) {
+            score = 0;
+            finalVerdict = Verdict.SAFE;
+        }
+
+        // 3. Normalização para logs
+        final String normalizedValueForLog = switch (request.itemType()) {
             case EMAIL -> NormalizerUtil.normalizeEmail(request.itemValue());
             case PHONE -> NormalizerUtil.normalizePhone(request.itemValue());
             case URL -> NormalizerUtil.normalizeUrl(request.itemValue());
         };
 
-        //2.extrai host quando for url
         final String urlHostForLog = (request.itemType() == ItemType.URL)
                 ? NormalizerUtil.normalizeUrl(request.itemValue())
                 : null;
 
-        //3.cria o log com o construtor atual
+        // 4. Salva log
         VerificationLog verificationLog = new VerificationLog(
                 null,
                 request.itemType(),
                 request.itemValue(),
                 finalVerdict,
                 String.join(",", allReasons),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                score
         );
-
-        //4. preenche os novos campos migration v6
         verificationLog.setNormalizedValue(normalizedValueForLog);
         verificationLog.setUrlHost(urlHostForLog);
-
         logRespository.save(verificationLog);
 
-        return new VerificationResponse(finalVerdict, allReasons);
+        return new VerificationResponse(
+                finalVerdict,
+                allReasons,
+                request.itemType(),
+                request.itemValue(),
+                score
+        );
     }
 
-    private Verdict determineVerdict(List<String> reasons) {
-        if(reasons.contains("ITEM_FOUND_IN_WHITELIST")) return Verdict.SAFE;
+    private int calculateRiskScore(List<String> reasons, ItemType type, String value) {
+        int score = 0;
+        if (reasons.contains("ITEM_FOUND_IN_BLACKLIST")) return 100;
 
-        if(reasons.contains("ITEM_FOUND_IN_BLACKLIST")) return Verdict.BLOCK;
+        // REGRAS DE URL
+        if (reasons.contains("URL_PHISHING_DETECTED") ||
+                reasons.contains("URL_MALWARE_DETECTED")) return 100;
 
-        if(reasons.contains("MATCH_OFFICIAL_DOMAIN") && codebankersProperties.isOfficialDomainIsSafe()) return Verdict.SAFE;
+        if (reasons.contains("PHONE_IS_VOIP")) score += 60;
 
-        return Verdict.REVIEW; // se nenhuma regra foi acionada, revisar;
+        // REGRAS DE TELEFONE
+        if (reasons.contains("PHONE_IS_VOIP")) score += 60;
+        if (reasons.contains("PHONE_NUMBER_NOT_EXIST")) score += 20;
+        if (reasons.contains("UNKNOWN_CARRIER")) score += 10;
+        if (reasons.contains("PHONE_IS_LANDLINE")) score += 15;
+
+        // REGRAS DE EMAIL
+        if (reasons.contains("EMAIL_IS_DISPOSABLE")) score += 35;
+        if (reasons.contains("EMAIL_ADDRESS_NOT_EXIST")) score += 20;
+        if (reasons.contains("DOMAIN_CREATED_RECENTLY")) score += 25;
+        if (reasons.contains("LOW_REPUTATION_SCORE")) score += 15;
+        if (reasons.contains("INVALID_EMAIL_SYNTAX") ||
+                reasons.contains("INVALID_PHONE_SYNTAX") ||
+                reasons.contains("INVALID_URL_SYNTAX")) score += 5;
+
+        // Crowdsourcing: Consulta quantas denúncias existem
+        String normalized = switch (type) {
+            case EMAIL -> NormalizerUtil.normalizeEmail(value);
+            case PHONE -> NormalizerUtil.normalizePhone(value);
+            case URL -> NormalizerUtil.normalizeUrl(value);
+        };
+
+        // Conta denúncias e soma 3 pontos cada
+        long reportCount = reportRepository.countByItemTypeAndItemValue(type, normalized);
+        score += (int) (reportCount * 3);
+
+        return Math.min(score, 99);
+    }
+
+    private Verdict determineVerdictByScore(int score, List<String> reasons) {
+        if (score == 0) return Verdict.SAFE;
+        if (score <= 20) return Verdict.LOW_RISK;
+        if (score <= 60) return Verdict.MEDIUM_RISK;
+        if (score < 100) return Verdict.HIGH_RISK;
+        return Verdict.CONFIRMED_SCAM;
     }
 }
