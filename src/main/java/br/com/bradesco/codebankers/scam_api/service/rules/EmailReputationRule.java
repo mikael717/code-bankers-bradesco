@@ -38,7 +38,6 @@ public class EmailReputationRule implements VerificationRule {
                     + "&email=" + email;
 
             AbstractEmailResponse response = restTemplate.getForObject(url, AbstractEmailResponse.class);
-
             if (response != null) {
                 if (response.quality() != null && response.quality().isDisposable()) {
                     reasons.add("EMAIL_IS_DISPOSABLE");

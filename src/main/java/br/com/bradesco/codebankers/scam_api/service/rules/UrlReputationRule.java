@@ -5,6 +5,9 @@ import br.com.bradesco.codebankers.scam_api.domain.ItemType;
 import br.com.bradesco.codebankers.scam_api.dto.VerificationRequest;
 import br.com.bradesco.codebankers.scam_api.dto.external.GoogleSafeBrowsingPacket;
 import br.com.bradesco.codebankers.scam_api.util.NormalizerUtil;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,12 +48,19 @@ public class UrlReputationRule implements VerificationRule {
             GoogleSafeBrowsingPacket.ClientInfo clientInfo = new GoogleSafeBrowsingPacket.ClientInfo("codebankers-api", "1.0.0");
             GoogleSafeBrowsingPacket.Request googleRequest = new GoogleSafeBrowsingPacket.Request(clientInfo, threatInfo);
 
-            GoogleSafeBrowsingPacket.Response response = restTemplate.postForObject(endpoint, googleRequest, GoogleSafeBrowsingPacket.Response.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<GoogleSafeBrowsingPacket.Request> entity = new HttpEntity<>(googleRequest, headers);
+
+            GoogleSafeBrowsingPacket.Response response = restTemplate.postForObject(
+                    endpoint,
+                    entity,
+                    GoogleSafeBrowsingPacket.Response.class
+            );
 
             if (response != null && response.matches() != null && !response.matches().isEmpty()) {
-
                 for (GoogleSafeBrowsingPacket.Match match : response.matches()) {
-                    System.out.println("🛑 GOOGLE DETECTOU: " + match.threatType());
 
                     if ("SOCIAL_ENGINEERING".equals(match.threatType())) {
                         reasons.add("URL_PHISHING_DETECTED");
@@ -60,10 +70,12 @@ public class UrlReputationRule implements VerificationRule {
                         reasons.add("URL_THREAT_DETECTED");
                     }
                 }
+            } else {
             }
 
         } catch (Exception e) {
             System.err.println("Erro Google Safe Browsing: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return reasons;

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card } from 'primereact/card';
-import { Tag } from 'primereact/tag'; // Verifique se esta importação está correta
+import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Dialog } from 'primereact/dialog';
 import { InputTextarea } from 'primereact/inputtextarea';
+import ScamWizard from './ScamWizard';
 import { Toast } from 'primereact/toast';
 import { useRef } from 'react';
 
@@ -13,7 +14,9 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
     const [reportReason, setReportReason] = useState('');
     const [reporting, setReporting] = useState(false);
     const toast = useRef(null);
-
+    const [showScamWizard, setShowScamWizard] = useState(false);
+    const isBrazilianMobile = result?.reasons?.includes('PHONE_IS_MOBILE_BR_CARRIER');
+console.log("DADOS QUE CHEGARAM DO BACKEND:", result);
     const config = (() => {
         const verdict = result?.verdict || 'MEDIUM_RISK'; // Default para não quebrar
         switch (verdict) {
@@ -36,7 +39,6 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
     const displayValue = result?.itemValue || requestedValue || '';
     const displayScore = result?.riskScore !== undefined ? result.riskScore : '-';
 
-    // Função que chama o Backend
     const handleReportSubmit = async () => {
         setReporting(true);
         try {
@@ -46,9 +48,6 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
                 body: JSON.stringify({
                     itemType: displayItemType,
                     itemValue: displayValue,
-                    // O backend espera VerificationRequest, que nao tem "reason" ainda no DTO principal,
-                    // Se você quiser mandar reason, precisará atualizar o DTO no Java ou mandar na query string.
-                    // Por enquanto, vamos mandar o básico para somar pontos.
                 })
             });
 
@@ -57,7 +56,7 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
                 setTimeout(() => {
                     setShowReportDialog(false);
                     setReportReason('');
-                    onClose(); // Fecha o card e volta pro form
+                    onClose();
                 }, 2000);
             } else {
                 throw new Error('Erro ao reportar');
@@ -92,19 +91,38 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
                                 className={`h-full border-round`}
                                 style={{
                                     width: `${Math.min(displayScore, 100)}%`,
-                                    // AQUI ESTAVA O PROBLEMA! Usamos config.progressColor diretamente.
                                     backgroundColor: config.progressColor
                                 }}
                             ></div>
                         </div>
                     </div>
+                    {/* ALERTA ESPECIAL DE WHATSAPP */}
+                                        {isBrazilianMobile && (
+                                            <div className="p-3 mb-4 border-round bg-blue-50 border-1 border-blue-200">
+                                                <div className="flex align-items-start gap-3">
+                                                    <i className="pi pi-info-circle text-blue-600 text-xl mt-1"></i>
+                                                    <div className="text-left">
+                                                        <h4 className="text-blue-900 font-bold m-0 mb-2">Atenção: Possível Clonagem</h4>
+                                                        <p className="text-blue-700 text-sm m-0 line-height-3">
+                                                            Este é um número de celular válido (Vivo/Claro/Tim/etc).
+                                                            Porém, golpistas usam números reais para aplicar golpes no WhatsApp.
+                                                        </p>
+                                                        <Button
+                                                            label="Recebeu mensagem suspeita?"
+                                                            className="p-button-link p-0 mt-2 text-blue-800 font-bold"
+                                                            onClick={() => setShowScamWizard(true)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
                     <Divider />
 
                     <div className="text-left my-4">
                         <div className="flex align-items-center justify-content-between mb-3 p-3 surface-50 border-round">
                             <span className="font-medium text-700">Tipo:</span>
-                            <Tag value={displayItemType} severity="info" /> {/* Tag de tipo, pode ser alterada para seguir o config.severity se quiser */}
+                            <Tag value={displayItemType} severity="info" />
                         </div>
 
                         <div className="flex align-items-start justify-content-between mb-3 p-3 surface-50 border-round">
@@ -167,6 +185,7 @@ const ResultCard = ({ result, requestedItemType, requestedValue, onClose }) => {
                     </div>
                 </div>
             </Dialog>
+          <ScamWizard visible={showScamWizard} onHide={() => setShowScamWizard(false)} />
         </>
     );
 };

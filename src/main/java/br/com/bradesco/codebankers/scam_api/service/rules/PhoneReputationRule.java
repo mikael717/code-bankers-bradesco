@@ -36,7 +36,6 @@ public class PhoneReputationRule implements VerificationRule {
         if (request.itemType() != ItemType.PHONE) {
             return Collections.emptyList();
         }
-
         List<String> reasons = new ArrayList<>();
 
         String rawPhone = NormalizerUtil.normalizePhone(request.itemValue());
@@ -46,8 +45,6 @@ public class PhoneReputationRule implements VerificationRule {
             PhoneNumber number = PhoneNumber.fetcher(formattedPhone).setFields("line_type_intelligence").fetch();
 
             Map<String, Object> intelligence = number.getLineTypeIntelligence();
-
-            System.out.println("🛑 DUMP RAW TWILIO: " + intelligence);
 
             if (intelligence != null) {
                 String type = (String) intelligence.get("type");
@@ -68,15 +65,29 @@ public class PhoneReputationRule implements VerificationRule {
                 if (carrierName != null && (carrierName.toLowerCase().contains("twilio") || carrierName.toLowerCase().contains("bandwidth") || carrierName.toLowerCase().contains("vonage"))) {
                     reasons.add("PHONE_FROM_API_PLATFORM");
                 }
+                if ("mobile".equalsIgnoreCase(type) && carrierName != null) {
+                    String carrierLower = carrierName.toLowerCase();
+                    if (carrierLower.contains("vivo") ||
+                            carrierLower.contains("claro") ||
+                            carrierLower.contains("tim") ||
+                            carrierLower.contains("oi") ||
+                            carrierLower.contains("algar")) {
+
+                        reasons.add("PHONE_IS_MOBILE_BR_CARRIER");
+                    }
+                }
             }
 
-        } catch (ApiException e) {
+
+        } catch (
+                ApiException e) {
             if (e.getStatusCode() == 404) {
                 reasons.add("PHONE_NUMBER_NOT_EXIST");
             } else {
                 System.err.println("Erro Twilio API: " + e.getMessage());
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             System.err.println("Erro Genérico Twilio: " + e.getMessage());
         }
 
